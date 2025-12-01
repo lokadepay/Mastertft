@@ -1,0 +1,27 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Modèle MtftComposition (MasterTFT)
+model mtftComposition {
+  id   String @id @default(uuid())
+  name String @unique
+
+  // STATS
+  top4Rate     Float?
+  averagePlace Float?
+  playRate     Float?
+
+  // DETAILS DE LA COMP
+  compDetails Json?
+
+  // CHAMPS DE GESTION
+  source     String   @default("MANUAL")
+  lastUpdate DateTime @default(now()) @updatedAt
+}
