@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "MtftUnit" ALTER COLUMN "health" SET DATA TYPE TEXT,
+ALTER COLUMN "attackDamage" SET DATA TYPE TEXT;

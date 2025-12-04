@@ -6,22 +6,389 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// Modèle MtftComposition (MasterTFT)
-model mtftComposition {
-  id   String @id @default(uuid())
-  name String @unique
+// --------------------------------------------------------------------
+// ENTITES PRICIPALES
+// --------------------------------------------------------------------
 
-  // STATS
+model MtftUnit {
+  id        String @id @default(uuid())
+  name      String @unique
+  riotApiId String @unique
+  cost      Int //1 à 5 
+  imageUrl  String
+
+  // STATS INGAME
+  health       String // triple valeur (../../..)
+  startMana    Int
+  maxMana      Int
+  armor        Int
+  magicResist  Int
+  attackDamage String // triple valeur (../../..)
+  attackSpeed  Float
+  attackRange  Int
+
+  // CAPACITE
+  ability   MtftAbility @relation(fields: [abilityId], references: [id])
+  abilityId String      @unique
+
+  // STATS META (manuelle dans un premier temps, API Riot ensuite)
+  playRate     Float?
   top4Rate     Float?
   averagePlace Float?
+
+  // RELATIONS
+  traits           UnitTrait[] //Traits du champion (2-3)
+  recommendedItems UnitRecommendedItem[] //Core Items
+  featuredInComps  CompositionFeaturedUnit[] // Compo où il est Core Unit
+  coreInComps      CompositionCoreUnit[] // Core units des compos
+  flexInComps      CompositionFlexUnit[] // Flex units des compos
+  itemStats        UnitItemStat[] // Stats item par unit
+  bestCompositions CompositionUnit[] // Pour les meilleures compos des champions
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model MtftAbility {
+  id      String  @id @default(uuid())
+  name    String
+  passive String? @db.Text
+  active  String  @db.Text
+
+  // RELATION 1to1 AVEC LE CHAMPION
+  champion MtftUnit?
+
+  // RELATION AVEC LES STATS 
+  scalingStats MtftScalingStat[]
+}
+
+model MtftScalingStat {
+  id Int @id @default(autoincrement())
+
+  statName  String
+  statValue String
+
+  // RELATION AVEC LA CAPACITE
+  abilityId String //Même valeur de l'id
+  ability   MtftAbility @relation(fields: [abilityId], references: [id])
+
+  @@index([abilityId])
+}
+
+model MtftItem {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  riotApiId   String  @unique
+  description String  @db.Text
+  imageUrl    String?
+  stats       Json?
+
+  // RECETTE DES ITEMS
+  component1Id String?
+  component2Id String?
+  component1   MtftItem? @relation("ItemComponent1", fields: [component1Id], references: [id])
+  component2   MtftItem? @relation("ItemComponent2", fields: [component2Id], references: [id])
+
+  // STATS META
   playRate     Float?
+  top4Rate     Float?
+  averagePlace Float?
 
-  // DETAILS DE LA COMP
-  compDetails Json?
+  // RELATIONS INVERSES
+  builtFrom1 MtftItem[] @relation("ItemComponent1")
+  builtFrom2 MtftItem[] @relation("ItemComponent2")
 
-  // CHAMPS DE GESTION
-  source     String   @default("MANUAL")
-  lastUpdate DateTime @default(now()) @updatedAt
+  //RELATIONS
+  recommendedFor     UnitRecommendedItem[] // Items reco pas unit
+  coreItems          CompositionCoreItem[] // Core items des compos
+  priorityComponents CompositionPriorityComponent[] // Composants prio pour compos
+  specialItems       CompositionSpecialItem[] // Specials items pour compos
+  unitStats          UnitItemStat[] // Stats par champion
+  combinedItemStats  ItemCombinationStat[]          @relation("MainItem")
+  combineWithStats   ItemCombinationStat[]          @relation("CombinedWith")
+  traitStats         ItemTraitStat[] // Stat par trait
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MtftTrait {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  riotApiId   String  @unique
+  description String  @db.Text
+  imageUrl    String?
+
+  // RELATION
+  units           UnitTrait[] //Trait des untis
+  breakpoints     MtftTraitBreakpoint[] // stats ig des traits
+  featuredInComps CompositionFeaturedTrait[]
+  itemStats       ItemTraitStat[] // Stats des items sur ce trait
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MtftTraitBreakpoint {
+  id      String    @id @default(uuid())
+  traitId String
+  trait   MtftTrait @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  unitsNeeded Int // Nombre et palier d'units requises
+  level       String // Bronze, silver, gold
+  effect      String @db.Text //Effet des différents paliers
+
+  createdAt DateTime @default(now())
+
+  @@unique([traitId, unitsNeeded])
+}
+
+model MtftAugment {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  riotApiId   String   @unique
+  description String   @db.Text
+  tier        String // silver, gold, prisma, autres couleurs
+  availableAt String[] // 2-1; 3-2; 4-2
+  imageUrl    String? // image selon le tiers ou en titre
+
+  createdAt                    DateTime                     @default(now())
+  updatedAt                    DateTime                     @updatedAt
+  compositionAugmentPriorities CompositionAugmentPriority[]
+}
+
+model MtftCompStyle {
+  id          String @id @default(uuid())
+  name        String @unique // Fast8, reroll 1 cost etc.
+  description String @db.Text
+
+  compositions MtftComposition[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MtftComposition {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  augmentPriority String[] // Eco, Item, Fight
+
+  // STATS
+  playRate     Float?
+  top4Rate     Float?
+  averagePlace Float?
+
+  // STYLE
+  compStyleId String?
+  compStyle   MtftCompStyle? @relation(fields: [compStyleId], references: [id])
+
+  // RELATIONS
+  featuredUnits      CompositionFeaturedUnit[] // 2-3 core units pour la carte
+  featuredTraits     CompositionFeaturedTrait[] // 2-3 core traits pour la carte
+  coreUnits          CompositionCoreUnit[] // Core units
+  flexUnits          CompositionFlexUnit[] // Flex units
+  allUnits           CompositionUnit[] // Meilleur compos de l'unit
+  coreItems          CompositionCoreItem[] // Core Items
+  priorityComponents CompositionPriorityComponent[] // Composans prioritaire des compos
+  specialItems       CompositionSpecialItem[] // Les meilleurs items spéciaux
+  augmentsPriority   CompositionAugmentPriority[] // Style d'augment prioritaire pour les compos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --------------------------------------------------------------------
+// TABLE INTERMEDIAIRE
+// --------------------------------------------------------------------
+
+model UnitTrait {
+  id      String @id @default(uuid())
+  unitId  String
+  traitId String
+
+  unit  MtftUnit  @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  trait MtftTrait @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, traitId])
+}
+
+model UnitRecommendedItem {
+  id       String @id @default(uuid())
+  unitId   String
+  itemId   String
+  priority Int // 1 2 3 pour l'ordre d'importance
+
+  unit MtftUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  item MtftItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, itemId])
+}
+
+model UnitItemStat {
+  id     String @id @default(uuid())
+  unitId String
+  itemId String
+
+  // STATS
+  playRate     Float?
+  top4Rate     Float?
+  averagePlace Float?
+  // le delta se calcule en front (avg place de l'item sur l'unit - avg place de l'item)
+
+  unit MtftUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  item MtftItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, itemId])
+}
+
+model ItemCombinationStat {
+  id             String @id @default(uuid())
+  itemId         String
+  combinedWithId String
+
+  // STATS
+  playRate     Float?
+  top4Rate     Float?
+  averagePlace Float?
+  // Delta calculé en front (avg place du combo - avg de l'item )
+
+  item        MtftItem @relation("MainItem", fields: [itemId], references: [id], onDelete: Cascade)
+  combineWith MtftItem @relation("CombinedWith", fields: [combinedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, combinedWithId])
+}
+
+model ItemTraitStat {
+  id      String @id @default(uuid())
+  itemId  String
+  traitId String
+
+  // STATS
+  playRate     Float?
+  top4Rate     Float?
+  averagePlace Float?
+  // Delta calculé en front (avg place de l'item avec le trait activé - avg de l'item )
+
+  item  MtftItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  trait MtftTrait @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, traitId])
+}
+
+model CompositionFeaturedUnit {
+  id            String @id @default(uuid())
+  compositionId String
+  unitId        String
+  displayOrder  Int //Ordre d'affichage sur la carte
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  unit        MtftUnit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, displayOrder]) // Pas deux units au meme ordre
+  @@unique([compositionId, unitId]) // Pas deux fois la même unit
+}
+
+model CompositionFeaturedTrait {
+  id            String @id @default(uuid())
+  compositionId String
+  traitId       String
+  displayOrder  Int // Ordre d'affichage sur la carte
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  trait       MtftTrait       @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, displayOrder])
+  @@unique([compositionId, traitId])
+}
+
+model CompositionCoreUnit {
+  id            String @id @default(uuid())
+  compositionId String
+  unitId        String
+  displayOrder  Int //Ordre d'affichage
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  unit        MtftUnit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, displayOrder]) // Pas deux units au meme ordre
+  @@unique([compositionId, unitId]) // Pas deux fois la même unit
+}
+
+model CompositionFlexUnit {
+  id            String @id @default(uuid())
+  compositionId String
+  unitId        String
+  displayOrder  Int //Ordre d'affichage
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  unit        MtftUnit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, displayOrder]) // Pas deux units au meme ordre
+  @@unique([compositionId, unitId]) // Pas deux fois la même unit
+}
+
+model CompositionUnit {
+  id            String @id @default(uuid())
+  compositionId String
+  unitId        String
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  unit        MtftUnit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, unitId]) // Pas deux fois la même unit
+}
+
+model CompositionCoreItem {
+  id            String @id @default(uuid())
+  compositionId String
+  itemId        String
+  displayOrder  Int // Ordre d'affichage
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  item        MtftItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, itemId])
+  @@unique([compositionId, displayOrder])
+}
+
+model CompositionPriorityComponent {
+  id            String @id @default(uuid())
+  compositionId String
+  itemId        String
+  displayOrder  Int // Ordre d'affichage
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  item        MtftItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, itemId])
+  @@unique([compositionId, displayOrder])
+}
+
+model CompositionSpecialItem {
+  id            String @id @default(uuid())
+  compositionId String
+  itemId        String
+  displayOrder  Int // Ordre d'affichage
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  item        MtftItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, itemId])
+  @@unique([compositionId, displayOrder])
+}
+
+model CompositionAugmentPriority {
+  id            String @id @default(uuid())
+  compositionId String
+  augmentId     String
+  displayOrder  Int
+
+  composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  augment     MtftAugment     @relation(fields: [augmentId], references: [id], onDelete: Cascade)
+
+  @@unique([compositionId, augmentId])
+  @@unique([compositionId, displayOrder])
 }
