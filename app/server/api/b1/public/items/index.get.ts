@@ -3,11 +3,12 @@ import { prisma } from '~/server/utils/prisma';
 
 export default defineEventHandler(async (event) => {
     try {
-        const allUnits = await prisma.mtftUnit.findMany({
+        const allItems = await prisma.mtftItem.findMany({
             select: {
                 id: true,
                 name: true,
-                cost: true,
+                description: true,
+                type: true, // Component, Item de base, Darkin etc.
                 imageUrl: true,
                 riotApiId: true,
                 playRate: true,
@@ -15,22 +16,21 @@ export default defineEventHandler(async (event) => {
                 averagePlace: true
             },
             orderBy: {
-                cost: 'asc' // On trie les champions par coûts par défaut
+                name: 'asc' // On trie par nom par défaut
             }
         })
 
         return {
             success: true,
-            data: allUnits,
-            count: allUnits.length
+            data: allItems,
+            count: allItems.length
         }
-
     } catch (error) {
-        console.error("Erreur lors de la récupération des units", error)
+        console.error("Erreur lors de la récupération des items")
 
         throw createError({
             statusCode: 500,
-            message: "Impossible de charger la liste des champions",
+            message:"Impossible de charger la liste des items",
         })
     }
 })
