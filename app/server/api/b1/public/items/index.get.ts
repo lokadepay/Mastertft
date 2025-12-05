@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
         throw createError({
             statusCode: 500,
-            message:"Impossible de charger la liste des items",
+            message: "Impossible de charger la liste des items",
         })
     }
 })

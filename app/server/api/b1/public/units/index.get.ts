@@ -14,9 +14,10 @@ export default defineEventHandler(async (event) => {
                 top4Rate: true,
                 averagePlace: true
             },
-            orderBy: {
-                cost: 'asc' // On trie les champions par coûts par défaut
-            }
+            orderBy: [
+                { cost: 'asc' }, // Trier d'abors par coût
+                { name: 'asc' }  // Trier ensuite par nom si les coûts sont égaux
+            ]
         })
 
         return {

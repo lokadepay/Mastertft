@@ -10,9 +10,6 @@ export default defineEventHandler(async (event) => {
                 description: true,
                 imageUrl: true,
                 riotApiId: true,
-                playRate: true,
-                top4Rate: true,
-                averagePlace: true,
                 breakpoints: {
                     select: {
                         unitsNeeded: true, // Le nombre d'units pour déclacher les paliers
@@ -34,12 +31,12 @@ export default defineEventHandler(async (event) => {
             data: allTraits,
             count: allTraits.length
         }
-    }   catch (error) {
-            console.error("Erreur lors de la récupération des traits", error)
+    } catch (error) {
+        console.error("Erreur lors de la récupération des traits", error)
 
-            throw createError ({
-                statusCode: 500,
-                message: "Impossible de charger la liste des traits",
-            })
+        throw createError({
+            statusCode: 500,
+            message: "Impossible de charger la liste des traits",
+        })
     }
 })
