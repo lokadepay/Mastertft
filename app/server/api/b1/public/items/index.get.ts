@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
                 name: true,
                 description: true,
                 type: true, // Component, Item de base, Darkin etc.
+                stats: true,
                 imageUrl: true,
                 riotApiId: true,
                 playRate: true,
