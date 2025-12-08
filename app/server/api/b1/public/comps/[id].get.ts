@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const compId = getRouterParam(event, 'id')
 
     if (!compId) {
-        throw createError({ statusCode: 400, message: 'ID de la compo manquante' })
+        throw createError({ statusCode: 400, message: 'ID de la compo manquant' })
     }
 
     try {
