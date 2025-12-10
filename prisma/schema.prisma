@@ -303,6 +303,9 @@ model CompositionFeaturedTrait {
   traitId       String
   displayOrder  Int // Ordre d'affichage sur la carte
 
+  activationLevel String? // Rang atteint (bronze, silver, gold)
+  unitCount       Int? // Nombre d'unité du trait
+
   composition MtftComposition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
   trait       MtftTrait       @relation(fields: [traitId], references: [id], onDelete: Cascade)
 

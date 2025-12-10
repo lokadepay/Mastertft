@@ -14,12 +14,5 @@ export default defineNuxtConfig({
     typeCheck: true
   },
 
-  rootDir: '.',
-
   srcDir: 'app/',
-
-  nitro: {
-    srcDir: './app/server'
-  },
-
 })
