@@ -32,6 +32,9 @@ export default defineEventHandler(async (event) => {
                         }))
                     }
                 })
+            },
+            include: {
+                breakpoints: true
             }
         })
 
