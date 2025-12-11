@@ -44,7 +44,10 @@ export default defineEventHandler(async (event) => {
                 magicResist: parseInt(body.magicResist),
                 attackDamage: body.attackDamage,
                 attackSpeed: parseFloat(body.attackSpeed),
-                attackRange: parseInt(body.attackRange)
+                attackRange: parseInt(body.attackRange),
+                playRate: body.playRate ? parseFloat(body.playRate) : undefined,
+                top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
+                averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
             }
         })
 

@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
                 playRate: body.playRate ? parseFloat(body.playRate) : undefined,
                 top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
                 averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
-                augmentsPriority: body.augmentsPriority || [], // Tableau "Eco", "Fight", "Items"
+                augmentPriority: body.augmentPriority || [], // Tableau "Eco", "Fight", "Items"
 
                 // --- Relation compStyle ---
                 ...(body.compStyleId && {
@@ -74,11 +74,14 @@ export default defineEventHandler(async (event) => {
                     featuredTraits: {
                         create: body.featuredTraits.map((t: any) => ({
                             traitId: t.id,
-                            displayOrder: t.order
+                            displayOrder: t.order,
+                            // Ajout des infos pour la modale au cas où
+                            activationLevel: t.activationLevel || undefined,
+                            unitCount: t.unitCount ? parseInt(t.unitCount) : undefined
+
                         }))
                     }
                 }),
-                // Traits activés automatique via le frontend
 
                 // --- Relations Items ---
                 ...(body.coreItems && body.coreItems.length > 0 && {
@@ -121,7 +124,7 @@ export default defineEventHandler(async (event) => {
         })
 
         return {
-            succes: true,
+            success: true,
             message: `La composition "${newComp.name}" a été créée avec succès}`,
             data: newComp
         }

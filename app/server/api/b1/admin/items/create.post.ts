@@ -45,6 +45,9 @@ export default defineEventHandler(async (event) => {
                 component1Id: body.component1Id || null,
                 component2Id: body.component2Id || null,
                 stats: body.stats || null,
+                playRate: body.playRate ? parseFloat(body.playRate) : undefined,
+                top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
+                averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
 
             }
         })

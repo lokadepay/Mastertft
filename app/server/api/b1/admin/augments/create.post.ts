@@ -21,6 +21,10 @@ export default defineEventHandler(async (event) => {
                 riotApiId: body.riotApiId,
                 description: body.description,
                 tier: body.tier,
+                playRate: body.playRate ? parseFloat(body.playRate) : undefined,
+                top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
+                averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
+
                 availableAt: body.availableAt,
                 imageUrl: body.imageUrl
             }
