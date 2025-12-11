@@ -21,6 +21,17 @@ export default defineEventHandler(async (event) => {
                 riotApiId: body.riotApiId,
                 description: body.description,
                 imageUrl: body.imageUrl || null,
+
+                // --- BREAKPOINT ---
+                ...(body.breakpoints && body.breakpoints.length > 0 && {
+                    breakpoints: {
+                        create: body.breakpoints.map((bp: any) => ({
+                            unitsNeeded: parseInt(bp.unitsNeeded),
+                            level: bp.level,
+                            effect: bp.effect
+                        }))
+                    }
+                })
             }
         })
 
