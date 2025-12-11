@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
             data: {
                 ...(body.name && { name: body.name }),
                 ...(body.riotApiId && { riotApiId: body.riotApiId }),
-                ...(body.description && { desscription: body.description }),
+                ...(body.description && { description: body.description }),
                 ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
                 ...(body.stats && { stats: body.stats }),
                 ...(body.type && { type: body.type }),

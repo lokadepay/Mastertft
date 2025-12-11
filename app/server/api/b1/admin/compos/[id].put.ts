@@ -1,4 +1,3 @@
-import { create } from 'domain'
 import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import { prisma } from '~/server/utils/prisma'
 

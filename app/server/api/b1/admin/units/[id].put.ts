@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
                 ...(body.top4Rate !== undefined && {
                     top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : null
                 }),
-                ...(body.averagPlace !== undefined && {
+                ...(body.averagePlace !== undefined && {
                     averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : null
                 }),
 
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
                 ...(body.traits && {
                     traits: {
                         deleteMany: {},
-                        create: body.traits.map((traitId: String) => ({
+                        create: body.traits.map((traitId: string) => ({
                             traitId: traitId
                         }))
                     }
