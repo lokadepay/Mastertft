@@ -203,4 +203,23 @@ export const searchContent = async (query: string, type: 'units' | 'items' | 'au
             }
         })))
     }
+
+    // --- TRAITS --- 
+    else if (type === 'traits' && targetSet && targetSet.traits) {
+        const matches = targetSet.traits.filter((t: any) =>
+            (t.name && t.name.toLowerCase().includes(normalizedQuery)) ||
+            (t.apiName && t.apiName.toLowerCase().includes(normalizedQuery))
+        )
+
+        results.push(...matches.map((t: any) => ({
+            label: t.name,
+            riotId: t.apiName,
+            imageUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/tft-trait/${t.icon?.replace('.png', '') || t.apiName}.png`,
+            stats: {
+                description: t.desc,
+                breakpoints: t.effects
+            }
+        })))
+    }
+
 }
