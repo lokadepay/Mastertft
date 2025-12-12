@@ -95,6 +95,6 @@ export default defineEventHandler(async (event) => {
 
     } catch (error) {
         console.error(`Erreur lors du chargement des détails de l'unit ${unitId}:`, error);
-        throw createError({ statusCode: 500, message: "Erreur srveur lors de la récupération des détails de l'unit" })
+        throw createError({ statusCode: 500, message: "Erreur serveur lors de la récupération des détails de l'unit" })
     }
 })

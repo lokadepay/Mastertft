@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
         return {
             success: true,
-            message: `La compo "${deletedCompo}" a été supprimé avec succès`
+            message: `La compo "${deletedCompo.name}" a été supprimée avec succès`
         }
 
     } catch (error) {

@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
 
         throw createError({
             statusCode: 500,
-            message: "Errur serveur lors de la création de l'item"
+            message: "Erreur serveur lors de la création de l'item"
         })
     }
 })

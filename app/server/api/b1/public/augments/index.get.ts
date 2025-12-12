@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
         }
 
     } catch (error) {
-        console.error("rreur lors de la récupération de l'augment")
+        console.error("Erreur lors de la récupération de l'augment")
 
         throw createError({
             statusCode: 500,
