@@ -221,5 +221,18 @@ export const searchContent = async (query: string, type: 'units' | 'items' | 'au
             }
         })))
     }
+    else if (type === 'augments') {
+        const items = fullData?.item || []
+        const matches = items.filter((i: any) => ({
+            label: i.name,
+            riotid: i.apiName || i.id,
+            imageUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/tft-item/${i.icon?.replace('.png', '') || i.id}.png`,
+            stats: {
+                description: i.desc,
+                tier: i.rank
+            }
+        }))
+    }
 
+    return results.slice(0, 15)
 }
