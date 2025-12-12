@@ -157,4 +157,50 @@ export const searchContent = async (query: string, type: 'units' | 'items' | 'au
     const targetSet = getTargetSet(fullData)
     const normalizedQuery = query.toLowerCase()
     const results: SearchResult[] = []
+
+    // --- UNITS ---
+    if (type === 'units' && targetSet && targetSet.champions) {
+        const matches = targetSet.champions.filter((c: any) =>
+            (c.name && c.name.toLowerCase().includes(normalizedQuery)) ||
+            (c.apiName && c.apiName.toLowerCase().includes(normalizedQuery))
+        )
+
+        results.push(...matches.map((c: any) => ({
+            label: c.name,
+            riotId: c.apiName,
+            imageUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/tft-champion/${c.apiName}.png`,
+            stats: {
+                cost: c.cost,
+                health: c.stats?.hp,
+                maxMana: c.stats?.mana,
+                startMana: c.stats?.initialMana,
+                armor: c.stats?.armor,
+                magicResist: c.stats?.magicResist,
+                attackDamage: c.stats?.damage,
+                attackSpeed: c.stats?.attackSpeed,
+                attackRange: c.stats?.attackRange,
+                abilityName: c.ability?.name,
+                abilityDesc: c.ability?.desc,
+                traits: c.traits || []
+            }
+        })))
+    }
+
+    // --- ITEMS ---
+    else if (type === 'items') {
+        const items = fullData?.items || []
+        const matches = items.filter((i: any) =>
+            (i.name && i.name.toLowerCase().includes(normalizedQuery)) && i.desc
+        )
+
+        results.push(...matches.map((i: any) => ({
+            label: i.name,
+            riotId: i.id || i.apiName,
+            imageUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/tft-item/${i.id}.png`,
+            stats: {
+                description: i.desc,
+                effects: i.effects
+            }
+        })))
+    }
 }
