@@ -41,6 +41,10 @@ export default defineEventHandler(async (event) => {
                 ...(body.attackSpeed !== undefined && { attackSpeed: parseFloat(body.attackSpeed) }),
                 ...(body.attackRange !== undefined && { attackRange: parseInt(body.attackRange) }),
 
+                // --- UNLOCK (SET 16) ---
+                ...(body.unlockCondition !== undefined && { unlockCondition: body.unlockCondition || null }),
+                ...(body.unlockIconUrl !== undefined && { unlockIconUrl: body.unlockIconUrl || null }),
+
                 // --- STATS META ---
                 ...(body.playRate !== undefined && {
                     playRate: body.playRate ? parseFloat(body.playRate) : null

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
         return {
             success: true,
-            message: `L'augment "${deletedAugment}" a été supprimé avec succès`
+            message: `L'augment "${deletedAugment.name}" a été supprimé avec succès`
         }
 
     } catch (error) {

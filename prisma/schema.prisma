@@ -34,6 +34,10 @@ model MtftUnit {
   ability   MtftAbility @relation(fields: [abilityId], references: [id])
   abilityId String      @unique
 
+  // UNLOCK
+  unlockCondition String? @db.Text
+  unlockIconUrl   String?
+
   // STATS META (manuelle dans un premier temps, API Riot ensuite)
   playRate     Float?
   top4Rate     Float?

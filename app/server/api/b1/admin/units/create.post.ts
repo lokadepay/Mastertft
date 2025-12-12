@@ -37,6 +37,8 @@ export default defineEventHandler(async (event) => {
                 cost: parseInt(body.cost),
                 imageUrl: body.imageUrl,
                 abilityId: body.abilityId,
+
+                // --- STATS INGAME ---
                 health: body.health,
                 startMana: parseInt(body.startMana),
                 maxMana: parseInt(body.maxMana),
@@ -45,6 +47,12 @@ export default defineEventHandler(async (event) => {
                 attackDamage: body.attackDamage,
                 attackSpeed: parseFloat(body.attackSpeed),
                 attackRange: parseInt(body.attackRange),
+
+                // --- UNLOCK (SET 16) ---
+                unlockCondition: body.unlockCondition || null,
+                unlockIconUrl: body.unlockIconUrl || null,
+
+                // --- STATS META ---
                 playRate: body.playRate ? parseFloat(body.playRate) : undefined,
                 top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
                 averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
