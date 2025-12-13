@@ -11,7 +11,7 @@ export default defineNuxtConfig({
 
   vite: {
     resolve: {
-      dedupe: ['vue', 'vue-router', '@vue/runtime-core']
+      dedupe: ['vue', 'vue-router', '@vue/runtime-core', 'unhead', '@unhead/vue']
     }
   },
 
