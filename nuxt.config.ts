@@ -9,9 +9,15 @@ export default defineNuxtConfig({
     '@nuxt/ui',
   ],
 
+  vite: {
+    resolve: {
+      dedupe: ['vue', 'vue-router', '@vue/runtime-core']
+    }
+  },
+
   typescript: {
-    strict: true,
-    typeCheck: true
+    strict: false,
+    typeCheck: false
   },
 
   srcDir: 'app/',
