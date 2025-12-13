@@ -5,9 +5,6 @@
     "paths": {
       "~/*": [
         "app/*"
-      ],
-      "~/server/*": [
-        "app/server/*"
       ]
     },
     "types": [
@@ -15,7 +12,11 @@
     ]
   },
   "include": [
-    "app/server/**/*.ts",
-    "app/server/**/*.vue"
+    "app/**/*",
+    ".nuxt/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }
