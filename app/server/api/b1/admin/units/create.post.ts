@@ -2,11 +2,8 @@ import { defineEventHandler, createError, readBody } from 'h3'
 import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
-
-    // On lit les données
     const body = await readBody(event)
 
-    // On vérifie les champs requis
     if (!body.name || !body.riotApiId || !body.cost || !body.health || !body.startMana || !body.maxMana
         || !body.armor || !body.magicResist || !body.attackDamage || !body.attackSpeed || !body.attackRange
     ) {
@@ -16,37 +13,23 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    // On vérifie que l'ability de l'unit existe
-    const abilityExists = await prisma.mtftAbility.findUnique({
-        where: { id: body.abilityId },
-        select: { id: true }
-    })
-
-    if (!abilityExists) {
-        throw createError({
-            statusCode: 404,
-            message: "l'Id de la capacité fournie n'existe pas"
-        })
-    }
-
     try {
         const newUnit = await prisma.mtftUnit.create({
             data: {
                 name: body.name,
                 riotApiId: body.riotApiId,
-                cost: parseInt(body.cost),
+                cost: Number(body.cost),
                 imageUrl: body.imageUrl,
-                abilityId: body.abilityId,
 
                 // --- STATS INGAME ---
-                health: body.health,
-                startMana: parseInt(body.startMana),
-                maxMana: parseInt(body.maxMana),
-                armor: parseInt(body.armor),
-                magicResist: parseInt(body.magicResist),
-                attackDamage: body.attackDamage,
-                attackSpeed: parseFloat(body.attackSpeed),
-                attackRange: parseInt(body.attackRange),
+                health: String(body.health),
+                startMana: Number(body.startMana),
+                maxMana: Number(body.maxMana),
+                armor: Number(body.armor),
+                magicResist: Number(body.magicResist),
+                attackDamage: String(body.attackDamage),
+                attackSpeed: Number(body.attackSpeed),
+                attackRange: Number(body.attackRange),
 
                 // --- UNLOCK (SET 16) ---
                 unlockCondition: body.unlockCondition || null,
@@ -56,12 +39,25 @@ export default defineEventHandler(async (event) => {
                 playRate: body.playRate ? parseFloat(body.playRate) : undefined,
                 top4Rate: body.top4Rate ? parseFloat(body.top4Rate) : undefined,
                 averagePlace: body.averagePlace ? parseFloat(body.averagePlace) : undefined,
+
+                // --- ABILITY ---
+                ability: {
+                    create: {
+                        name: body.ability.name,
+                        active: body.ability.active,
+                        passive: body.ability.passive || null,
+                    }
+                }
+            },
+            include: {
+                ability: true // Pour renvoyer l'objet complet au front
             }
         })
 
         return {
             success: true,
             message: `L'unit "${newUnit.name}" a été créée avec succès (ID: ${newUnit.id})`,
+            data: newUnit
         }
 
     } catch (error) {

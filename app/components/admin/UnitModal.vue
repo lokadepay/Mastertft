@@ -8,7 +8,7 @@ const props = defineProps<{
     unitToEdit?: any | null // null -> création, sinon -> édition
 }>()
 
-const emit = defineEmits(['update: modelValue', 'success'])
+const emit = defineEmits(['update:modelValue', 'success'])
 const toast = useToast()
 
 // --- STATE ---
@@ -87,7 +87,7 @@ watch(() => props.unitToEdit, (newUnit) => {
             ...newUnit,
             health: String(newUnit.health),
             attackDamage: String(newUnit.attackDamage),
-            ability: newUnit.ability || { name: ', active: ', passive:'' },
+            ability: newUnit.ability || { name: '', active: '', passive:'' },
             unlockCondition: newUnit.unlockCondition || '',
             unlockIconUrl: newUnit.unlockIconUrl || ''
         })
@@ -166,7 +166,7 @@ async function onSubmit(event: FormSubmitEvent<any>) {
             color: 'green'
         })
 
-        emit('update: modelValue', false)
+        emit('update:modelValue', false)
         emit('success')
 
     } catch (error: any) {
@@ -181,14 +181,14 @@ async function onSubmit(event: FormSubmitEvent<any>) {
 </script>
 
 <template>
-    <UModal :model-value="modelValue" @update:model-value="emit('update: modelValue', $event)" :ui="{ width: 'sm:max-w-4xl' }">
+    <UModal :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" :ui="{ width: 'sm:max-w-4xl' }">
         <UCard>
             <template #header>
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-bold">
                         {{ unitToEdit ? `Modifier ${unitToEdit.name}` : 'Nouveau Champion' }}
                     </h2>
-                    <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="emit('update: modelValue', false)" />
+                    <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="emit('update:modelValue', false)" />
                 </div>
             </template>
 
@@ -208,8 +208,8 @@ async function onSubmit(event: FormSubmitEvent<any>) {
                             <div class="flex items-center gap-2">
                                 <img :src="item.imageUrl" class="w-8 h-8 rounded bg-gray-800" />
                                 <div class="flex flex-col">
-                                <span class="font-medium">{{ item.option.label }}</span>
-                                <span class="text-xs text-gray-500">{{ item.option.riotId }}</span>
+                                <span class="font-medium">{{ item.label }}</span>
+                                <span class="text-xs text-gray-500">{{ item.riotId }}</span>
                                 </div>
                             </div>
                         </template>
@@ -296,7 +296,7 @@ async function onSubmit(event: FormSubmitEvent<any>) {
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 sticky bottom-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800 p-4 -mx-6 -mb-6">
-                    <UButton color="gray" variant="ghost" @click="emit('update: modelValue', false)">
+                    <UButton color="gray" variant="ghost" @click="emit('update:modelValue', false)">
                     Annuler
                     </UButton>
                     <UButton type="submit" color="primary" icon="i-heroicons-check">
