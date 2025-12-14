@@ -25,5 +25,7 @@ export default defineNuxtConfig({
         typeCheck: false
     },
 
+    serverDir: 'app/server',
+
     srcDir: 'app/',
 })

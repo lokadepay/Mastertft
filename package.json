@@ -11,6 +11,7 @@
     "test:db": "node --loader ts-node/esm test-schema.ts"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@prisma/adapter-pg": "^7.1.0",
     "nuxt": "^4.2.1",
     "pg": "^8.16.3",
@@ -22,6 +23,7 @@
     "@types/node": "^24.10.1",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.16.0",
+    "sass": "^1.96.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vite-plugin-checker": "^0.11.0",

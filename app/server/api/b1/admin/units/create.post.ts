@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
                         name: body.ability.name,
                         active: body.ability.active,
                         passive: body.ability.passive || null,
+                        scalingStats: body.ability.scalingStats,
                     }
                 }
             },
