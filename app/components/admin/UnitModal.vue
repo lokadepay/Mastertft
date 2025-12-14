@@ -226,43 +226,44 @@ async function onSubmit() {
       <div class="p-4 sm:px-6 sm:py-4">
         <div class="h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
 
-          <div v-if="!unitToEdit" class="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div class="mb-4">
+          <div v-if="!unitToEdit" class="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg relative">
+            <div class="mb-4 relative">
                 <label for="ddragon-search" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Recherche Auto (Set 16)</label>
                 <p class="text-xs text-gray-500 mb-2">Tape le nom pour pré-remplir</p>
+                
                 <input 
                     id="ddragon-search" 
                     type="text" 
-                    placeholder="Ex: Neeko (la GOAT)"
+                    placeholder="Ex: Jinx"
                     v-model="ddragonQuery"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                    :class="{ 'opacity-50': loadingSearch }"
-                    :disabled="loadingSearch"
+                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-blue-500 focus:border-blue-500 shadow-sm pr-10"
                 />
-            </div>
 
-            <ul
-              v-if="ddragonResults.length > 0"
-              class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
-            >
-              <li
-                v-for="item in ddragonResults"
-                :key="item.riotApiId"
-                class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center gap-2"
-                @click="onSelectDDragon(item)"
-              >           
-                <img :src="item.imageUrl" class="w-8 h-8 rounded bg-gray-800" alt="item.label" />     
-                <div class="flex flex-col">
-                  <span class="font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
-                  <span class="text-xs text-gray-500 dark:text-gray-500 dark:text-gray-400">{{ item.riotApiId }}</span>
+                <div v-if="loadingSearch" class="absolute right-3 top-[34px] flex items-center pointer-events-none">
+                    <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+                        <path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 </div>
-              </li>
-            </ul>
-
-            <div v-if="loadingSearch" class="absolute inset-0 bg-gray-200/50 dark:bg-gray-900/50 flex items-center justify-center rounded-lg">
-                <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </div>
-
+            
+            <ul 
+                v-if="ddragonResults.length > 0" 
+                class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto left-0 top-[85px]"
+            >
+                <li 
+                    v-for="item in ddragonResults" 
+                    :key="item.riotApiId"
+                    class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center gap-2"
+                    @click="onSelectDDragon(item)"
+                >
+                    <img :src="item.imageUrl" class="w-8 h-8 rounded bg-gray-800" :alt="item.label" />
+                    <div class="flex flex-col">
+                        <span class="font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ item.riotApiId }}</span>
+                    </div>
+                </li>
+            </ul>
           </div>
 
           <form @submit.prevent="onSubmit" class="space-y-6">
