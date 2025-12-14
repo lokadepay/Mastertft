@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-// import UnitModal from '~/components/admin/UnitModal.vue';
+import UnitModal from '~/components/admin/UnitModal.vue';
 
 const showModal = ref(false); 
 </script>
