@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:modelValue', 'success'])
-const toast = useToast()
+// const toast = useToast()
 
 // --- STATE ---
 const state = reactive({
@@ -160,22 +160,22 @@ async function onSubmit(event: FormSubmitEvent<any>) {
 
         await $fetch(url, { method, body: event.data })
 
-        toast.add({ 
-            title: 'Succès', 
-            description: isEditing ? 'Champion modifié !' : 'Champion créé !', 
-            color: 'green'
-        })
+//        toast.add({ 
+//            title: 'Succès', 
+//            description: isEditing ? 'Champion modifié !' : 'Champion créé !', 
+//            color: 'green'
+//        })
 
         emit('update:modelValue', false)
         emit('success')
 
     } catch (error: any) {
         console.error(error)
-        toast.add({
-            title: 'Erreur',
-            description: error.data?.message || "Erreur sauvegarde",
-            color: 'red'
-        })
+//        toast.add({
+//            title: 'Erreur',
+  //          description: error.data?.message || "Erreur sauvegarde",
+    //        color: 'red'
+      //  })
     }
 }
 </script>
