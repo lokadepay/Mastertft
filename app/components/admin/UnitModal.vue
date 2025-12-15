@@ -87,7 +87,7 @@ watch(() => props.unitToEdit, (newUnit) => {
     if (newUnit) {
         // EDIT
         let scalingString = ''
-        if (newUnit.ability?.scalingSTats && Array.isArray(newUnit.ability.scalingStats)) {
+        if (newUnit.ability?.scalingStats && Array.isArray(newUnit.ability.scalingStats)) {
           scalingString= newUnit.ability.scalingStats
             .map((s: any) => `${s.statName} : ${s.statValue}`)  
             .join('\n')
