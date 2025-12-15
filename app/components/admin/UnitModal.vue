@@ -77,17 +77,32 @@ function resetState() {
     state.unlockCondition = ''
     state.unlockIconUrl = ''
     state.ability = { name: '', active: '', passive: '', scalingStats: '' }
+    state.playRate = undefined
+    state.top4Rate = undefined
+    state.averagePlace = undefined
 }
 
 // --- WATCHER ---
 watch(() => props.unitToEdit, (newUnit) => {
     if (newUnit) {
         // EDIT
+        let scalingString = ''
+        if (newUnit.ability?.scalingSTats && Array.isArray(newUnit.ability.scalingStats)) {
+          scalingString= newUnit.ability.scalingStats
+            .map((s: any) => `${s.statName} : ${s.statValue}`)  
+            .join('\n')
+        }
+
         Object.assign(state, {
             ...newUnit,
             health: String(newUnit.health),
             attackDamage: String(newUnit.attackDamage),
-            ability: newUnit.ability || { name: '', active: '', passive:'' },
+            ability: {
+              name: newUnit.ability?.name || '',
+              active: newUnit.ability?.active || '',
+              passive: newUnit.ability?.passive || '',
+              scalingStats: scalingString
+            },
             unlockCondition: newUnit.unlockCondition || '',
             unlockIconUrl: newUnit.unlockIconUrl || ''
         })
@@ -97,99 +112,56 @@ watch(() => props.unitToEdit, (newUnit) => {
     }
 }, { immediate: true })
 
-// --- DDRAGON ---
-const ddragonQuery = ref('')
-const ddragonResults = ref<any[]>([])
-const loadingSearch = ref(false)
-
-let searchTimeout: NodeJS.Timeout | null = null
-
-async function searchDDragon(query: string): Promise<any[]> {
-    if (query.length < 2) return []
-    loadingSearch.value = true
-    try {
-        const results = await $fetch<any[]>('/api/b1/admin/ddragon/search', {
-            params: { q: query, type: 'units' }
-        })
-        return results
-    } catch (e) {
-        console.error(e)
-        return []
-    } finally {
-        loadingSearch.value = false
-    }
-}
-
-watch(ddragonQuery, (newQuery) => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-    searchTimeout = null
-  }
-
-  if (newQuery.length < 2) {
-    ddragonResults.value=[]
-    return
-  }
-
-  searchTimeout = setTimeout(async () => {
-    ddragonResults.value = await searchDDragon(newQuery)
-  }, 300)
-
-})
-
-function onSelectDDragon(selection: any) {
-
-  console.log('--- Selection DDragon ---', selection)
-  console.log('--- Etat avant ---', { ...state })
-  
-    state.name = selection.label
-    state.riotApiId = selection.riotApiId
-    state.imageUrl = selection.imageUrl
-
-    if (selection.stats) {
-        state.cost = selection.stats.cost || 1
-        state.startMana = selection.stats.startMana || 0
-        state.maxMana = selection.stats.maxMana || 100
-        state.armor = selection.stats.armor || 20
-        state.magicResist = selection.stats.magicResist || 20
-        state.attackSpeed = selection.stats.attackSpeed || 0.65
-        state.attackRange = selection.stats.attackRange || 1
-
-        // Scaling HP
-        const baseHP = selection.stats.health || 500
-        const baseHP_2 = Math.round(baseHP * 1.8)
-        const baseHP_3 = Math.round(baseHP_2 * 1.8)
-        state.health = `${baseHP}/${baseHP_2}/${baseHP_3}`
-
-        // Scaling AD
-        const baseAD = selection.stats.attackDamage || 50
-        const baseAD_2 = Math.round(baseAD * 1.5)
-        const baseAD_3 = Math.round(baseAD_2 * 1.5)
-        state.attackDamage = `${baseAD}/${baseAD_2}/${baseAD_3}`
-
-        // Ability
-        state.ability.name = selection.stats.abilityName || ''
-        state.ability.active = selection.stats.abilityDesc?.replace(/<[^>]*>?/gm, '') || ''
-    }
-}
-
 // --- SOUMISSION FORM ---
 async function onSubmit() { 
     try {
-        const isEditing = !!props.unitToEdit
+      schema.parse(state)
 
-        const url = isEditing
-        ? `/api/b1/admin/units/${props.unitToEdit.id}` 
-        : '/api/b1/admin/units/create'   
-        const method = isEditing ? 'PUT' : 'POST'    
+      const isEditing = !!props.unitToEdit
+      const url = isEditing
+        ? `/api/b1/admin/units/${props.unitToEdit.id}`
+        : '/api/b1/admin/units/create'        
+      const method = isEditing ? 'PUT' : 'POST'
 
-        await $fetch(url, { method, body: state })
+      // Nettoyage
+      const payload = {
+        name: state.name,
+        riotApiId: state.riotApiId,
+        cost: state.cost,
+        imageUrl: state.imageUrl,
 
-        emit('update:modelValue', false)
-        emit('success')
+        health: state.health,
+        startMana: state.startMana,
+        maxMana: state.maxMana,
+        armor: state.armor,
+        magicResist: state.magicResist,
+        attackDamage: state.attackDamage,
+        attackSpeed: state.attackSpeed,
+        attackRange: state.attackRange,
+
+        unlockCondition: state.unlockCondition || undefined,
+        unlockIconUrl: state.unlockIconUrl || undefined,
+
+        playRate: state.playRate,
+        top4Rate: state.top4Rate,
+        averagePlace: state.averagePlace,
+
+        ability: {
+          name: state.ability.name,
+          active: state.ability.active,
+          passive: state.ability.passive || undefined,
+          scalingStats: state.ability.scalingStats || undefined,
+        }
+      }
+
+      await $fetch(url, { method, body: payload })
+
+      console.log(`Succès: ${isEditing ? 'Champion modifié' : 'Champion créé'}`)
+      emit('update:modelValue', false)
+      emit('success')
 
     } catch (error: any) {
-        console.error("Erreur sauvegarde :", error)
+      console.error("Erreur sauvegarde :",error)
     }
 }
 </script>

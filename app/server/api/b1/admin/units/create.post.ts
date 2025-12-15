@@ -1,10 +1,24 @@
 import { defineEventHandler, createError, readBody } from 'h3'
 import { prisma } from '~/server/utils/prisma'
 
+function parseScalingStats(text: string | undefined) {
+    if (!text) return []
+
+    return text.split('\n')
+        .map(line => {
+            const [name, value] = line.split(/:|: /).map(s => s.trim())
+            if (name && value) {
+                return { statName: name, statValue: value }
+            }
+            return null
+        })
+        .filter(Boolean) as { statName: string, statValue: string }[]
+}
+
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
-    if (!body.name || !body.riotApiId || !body.cost || !body.health || !body.startMana || !body.maxMana
+    if (!body.name || !body.riotApiId || !body.cost || !body.health || body.startMana === undefined || body.maxMana === undefined
         || !body.armor || !body.magicResist || !body.attackDamage || !body.attackSpeed || !body.attackRange
     ) {
         throw createError({
@@ -14,6 +28,8 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
+        const scalingStatsData = parseScalingStats(body.ability?.scalingStats)
+
         const newUnit = await prisma.mtftUnit.create({
             data: {
                 name: body.name,
@@ -46,7 +62,9 @@ export default defineEventHandler(async (event) => {
                         name: body.ability.name,
                         active: body.ability.active,
                         passive: body.ability.passive || null,
-                        scalingStats: body.ability.scalingStats,
+                        scalingStats: {
+                            create: scalingStatsData
+                        }
                     }
                 }
             },

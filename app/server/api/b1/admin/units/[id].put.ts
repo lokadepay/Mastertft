@@ -1,28 +1,49 @@
 import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import { prisma } from "~/server/utils/prisma"
 
+function parseScalingStats(text: string | undefined) {
+    if (!text) return []
+    return text.split('\n')
+        .map(line => {
+            const [name, value] = line.split(/:|: /).map(s => s.trim())
+            if (name && value) return { statName: name, statValue: value }
+            return null
+        })
+        .filter(Boolean) as { statName: string, statValue: string }[]
+}
+
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
     if (!id) {
         throw createError({
             statusCode: 400,
-            message: "ID de l'uité manquant"
+            message: "ID de l'unité manquant"
         })
     }
 
     const body = await readBody(event)
-    const existingUnit = await prisma.mtftUnit.findUnique({
-        where: { id }
-    })
-
-    if (!existingUnit) {
-        throw createError({
-            statusCode: 404,
-            message: "Unité non trouvée"
-        })
-    }
 
     try {
+        let abilityUpdateData: any = {}
+
+        if (body.ability) {
+            abilityUpdateData = {
+                update: {
+                    name: body.ability.name,
+                    active: body.ability.active,
+                    passive: body.ability.passive || null,
+                }
+            }
+
+            if (body.ability.scalingStats !== undefined) {
+                const newStats = parseScalingStats(body.ability.scalingStats)
+                abilityUpdateData.update.scalingStats = {
+                    deleteMany: {},
+                    create: newStats
+                }
+            }
+        }
+
         const updatedUnit = await prisma.mtftUnit.update({
             where: { id },
             data: {
@@ -60,9 +81,7 @@ export default defineEventHandler(async (event) => {
                 ...(body.traits && {
                     traits: {
                         deleteMany: {},
-                        create: body.traits.map((traitId: string) => ({
-                            traitId: traitId
-                        }))
+                        create: body.traits.map((traitId: string) => ({ traitId }))
                     }
                 }),
 
