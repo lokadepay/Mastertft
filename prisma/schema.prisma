@@ -27,6 +27,7 @@ model MtftUnit {
   armor        Int
   magicResist  Int
   attackDamage String // triple valeur (../../..)
+  abilityPower Int
   attackSpeed  Float
   attackRange  Int
 
@@ -168,6 +169,14 @@ model MtftAugment {
   createdAt                    DateTime                     @default(now())
   updatedAt                    DateTime                     @updatedAt
   compositionAugmentPriorities CompositionAugmentPriority[]
+}
+
+model MtftPortal {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  taux        String // % du taux d'apparition du portail
+  description String
+  imageUrl    String? // Image du champion du portail
 }
 
 model MtftCompStyle {

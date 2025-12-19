@@ -10,6 +10,14 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'success'])
 
+// --- DATA FETCHING ---
+const { data: allTraits } = await useFetch('/api/b1/public/traits', {
+  transform: (res:any) => res.data
+})
+const { data: allItems } = await useFetch('/api/b1/public/items', {
+  transform: (res:any) => res.data
+})
+
 // --- STATE ---
 const state = reactive({
     name: '',
@@ -24,20 +32,23 @@ const state = reactive({
     armor: 20,
     magicResist: 20,
     attackDamage: '',
+    abilityPower: 100,
     attackSpeed: 0.65,
     attackRange: 1,
 
     // Unlockables SET 16
     unlockCondition: '',
     unlockIconUrl: '',
-
+    
     // Ability
-    ability: {
-        name: '',
-        active: '',
-        passive: '',
-        scalingStats: '',
-    },
+    scalingStats: [{ statName: '', statValue: '' }],
+    abilityName: '',
+    abilityActive: '',
+    abilityPassive: '',
+
+    // Traits et Items
+    selectedTraits: [''] as string[],
+    selectedItems: [] as string[],
 
     // Meta stats
     playRate: undefined as number | undefined,
@@ -45,20 +56,80 @@ const state = reactive({
     averagePlace: undefined as number | undefined
 })
 
-// --- VALIDATION ---
-const schema = z.object({
-    name: z.string().min(1, 'Nom Requis'),
-    riotApiId: z.string().min(1, 'Riot ID requis'),
-    cost: z.number().min(1).max(7),
 
-    health: z.string().min(1, 'HP requis'),
-    attackDamage: z.string().min(1, 'AD requis'),
-
-    ability: z.object({
-        name: z.string().min(1, 'Nom du spell requis'),
-        active: z.string().min(1, 'Description active requise')
-    })
+// --- FILTRE & TRI ITEMS ---
+// On détecte si le champion est Bilgewater
+const isBilgewaterUnit = computed(() => {
+  if (!allTraits.value) return false
+  return state.selectedTraits.some(id => {
+    const trait = allTraits.value.find(t => t.id === id)
+    return trait?.name.toLowerCase().includes('bilgewater')
+  })
 })
+
+const currentItemFilters = ref(['completed']) // Items complets par défaut
+const currentSort = ref('top4Rate')
+const sortDirection = ref(-1)
+
+const itemFilters = computed(() => [
+  { label: 'Completed', value: 'completed' },
+  { label: 'Artifacts', value: 'artifact' },
+  { label: 'Emblems', value: 'emblem' },
+  { label: 'Radiants', value: 'radiant' },
+  { label: 'Darkins', value: 'darkin' },
+
+  {
+    label: 'Bilgewater',
+    value: 'bilgewater',
+    hidden: !isBilgewaterUnit.value
+  }
+])
+
+// Gestion filtres
+const toggleFilter = (val: string) => {
+  if (currentItemFilters.value.includes(val)) {
+    currentItemFilters.value = currentItemFilters.value.filter(v => v !== val)
+  } else {
+    currentItemFilters.value.push(val)
+  }
+}
+
+// Gestion tri
+const setSort = (key: string) => {
+  if (currentSort.value === key) {
+    sortDirection.value *= -1
+  } else {
+    currentSort.value = key
+    sortDirection.value = (key === 'averagePlace') ? 1 : -1
+  }
+}
+
+//Liste finale filtrée, triée et coupée
+const filteredItems = computed(() => {
+  if (!allItems.value) return []
+  if (currentItemFilters.value.length === 0) return []
+
+  return allItems.value
+    //Filtre
+    .filter((item: any) => currentItemFilters.value.includes(item.type))
+
+    //Tri
+    .sort((a: any, b: any) => {
+      const valA = a[currentSort.value] ?? (currentSort.value === 'averagePlace' ? 9 : -1)
+      const valB = b[currentSort.value] ?? (currentSort.value === 'averagePlace' ? 9 : -1)
+
+      return (valA - valB) * sortDirection.value
+    })
+
+    //Limite de 15 items
+    .slice(0 ,15)
+})
+
+// --- TRAITS & SCALING ---
+const addTrait = () => state.selectedTraits.push('')
+const removeTrait = (index: number) => state.selectedTraits.splice(index, 1)
+const addScalingStat = () => state.scalingStats.push({ statName: '', statValue: '' })
+const removeStat = (index: number) => state.scalingStats.splice(index, 1)
 
 // --- RESET ---
 function resetState() {
@@ -68,15 +139,25 @@ function resetState() {
     state.imageUrl = ''
     state.health = ''
     state.attackDamage = ''
+    state.abilityPower = 100
     state.startMana = 0
     state.maxMana = 100
     state.armor = 20
     state.magicResist = 20
     state.attackSpeed = 0.65
     state.attackRange = 1
+
     state.unlockCondition = ''
     state.unlockIconUrl = ''
-    state.ability = { name: '', active: '', passive: '', scalingStats: '' }
+
+    state.scalingStats = [{ statName: '', statValue: '' }]
+    state.abilityName = ''
+    state.abilityActive = ''
+    state.abilityPassive = ''
+
+    state.selectedTraits = ['']
+    state.selectedItems = []
+
     state.playRate = undefined
     state.top4Rate = undefined
     state.averagePlace = undefined
@@ -84,85 +165,84 @@ function resetState() {
 
 // --- WATCHER ---
 watch(() => props.unitToEdit, (newUnit) => {
-    if (newUnit) {
-        // EDIT
-        let scalingString = ''
-        if (newUnit.ability?.scalingStats && Array.isArray(newUnit.ability.scalingStats)) {
-          scalingString= newUnit.ability.scalingStats
-            .map((s: any) => `${s.statName} : ${s.statValue}`)  
-            .join('\n')
-        }
+  if (newUnit) {
+    state.name = newUnit.name
+    state.riotApiId = newUnit.riotApiId
+    state.cost = newUnit.cost
+    state.imageUrl = newUnit.imageUrl
 
-        Object.assign(state, {
-            ...newUnit,
-            health: String(newUnit.health),
-            attackDamage: String(newUnit.attackDamage),
-            ability: {
-              name: newUnit.ability?.name || '',
-              active: newUnit.ability?.active || '',
-              passive: newUnit.ability?.passive || '',
-              scalingStats: scalingString
-            },
-            unlockCondition: newUnit.unlockCondition || '',
-            unlockIconUrl: newUnit.unlockIconUrl || ''
-        })
+    state.health = String(newUnit.health)
+    state.startMana = newUnit.startMana
+    state.maxMana = newUnit.maxMana
+    state.armor = newUnit.armor
+    state.magicResist = newUnit.magicResist
+    state.attackDamage = String(newUnit.attackDamage)
+    state.abilityPower = newUnit.abilityPower || 100
+    state.attackSpeed = newUnit.attackSpeed
+    state.attackRange = newUnit.attackRange
+
+    state.unlockCondition = newUnit.unlockCondition || ''
+    state.unlockIconUrl = newUnit.unlockIconUrl || ''
+
+    state.abilityName = newUnit.ability?.name || ''
+    state.abilityActive = newUnit.ability?.acive || ''
+    state.abilityPassive = newUnit.ability?.passive || ''
+    if (newUnit.ability?.scalingStats?.length) {
+      state.scalingStats = newUnit.ability.scalingStats.map((s: any) => ({
+        statName: s.statName,
+        statValue: s.statValue
+      }))
     } else {
-        // CREATION
-        resetState()
+      state.scalingStats = [{ statName: '', statValue: '' }]
     }
+
+    state.selectedTraits = newUnit.traits?.length
+      ? newUnit.traits.map((t: any) => t.traitId)
+      : ['']
+    
+    state.selectedItems = newUnit.recommendedItems?.map((i :any) => i.itemId) || []
+
+    state.playRate = newUnit.playRate
+    state.top4Rate = newUnit.top4Rate
+    state.averagePlace = newUnit.averagePlace
+
+  } else {
+    resetState()
+  }
 }, { immediate: true })
 
-// --- SOUMISSION FORM ---
-async function onSubmit() { 
-    try {
-      schema.parse(state)
+// --- SUBMIT ---
+async function onSubmit() {
+  const traitIds = state.selectedTraits.filter(id => id !== '')
+  const cleanScalingStats = state.scalingStats.filter(s => s.statName && s.statValue)
 
-      const isEditing = !!props.unitToEdit
-      const url = isEditing
-        ? `/api/b1/admin/units/${props.unitToEdit.id}`
-        : '/api/b1/admin/units/create'        
-      const method = isEditing ? 'PUT' : 'POST'
+  const payload = {
+    ...state,
+    traitIds,
+    ability: {
+      name: state.abilityName,
+      active: state.abilityActive,
+      passive: state.abilityPassive,
+      scalingStats: cleanScalingStats
+    },
+    itemIds: state.selectedItems
+  }
 
-      // Nettoyage
-      const payload = {
-        name: state.name,
-        riotApiId: state.riotApiId,
-        cost: state.cost,
-        imageUrl: state.imageUrl,
+  const url = props.unitToEdit
+    ? `/api/b1/admin/units/${props.unitToEdit.id}`
+    : '/api/b1/admin/units/create'
 
-        health: state.health,
-        startMana: state.startMana,
-        maxMana: state.maxMana,
-        armor: state.armor,
-        magicResist: state.magicResist,
-        attackDamage: state.attackDamage,
-        attackSpeed: state.attackSpeed,
-        attackRange: state.attackRange,
-
-        unlockCondition: state.unlockCondition || undefined,
-        unlockIconUrl: state.unlockIconUrl || undefined,
-
-        playRate: state.playRate,
-        top4Rate: state.top4Rate,
-        averagePlace: state.averagePlace,
-
-        ability: {
-          name: state.ability.name,
-          active: state.ability.active,
-          passive: state.ability.passive || undefined,
-          scalingStats: state.ability.scalingStats || undefined,
-        }
-      }
-
-      await $fetch(url, { method, body: payload })
-
-      console.log(`Succès: ${isEditing ? 'Champion modifié' : 'Champion créé'}`)
-      emit('update:modelValue', false)
-      emit('success')
-
-    } catch (error: any) {
-      console.error("Erreur sauvegarde :",error)
-    }
+  try {
+    await $fetch(url, {
+      method: props.unitToEdit ? 'PUT' : 'POST',
+      body: payload
+    })
+    emit('success')
+    emit('update:modelValue', false)
+  } catch (e) {
+    alert('Erreur lors de la sauvegarde')
+    console.error(e)
+  }
 }
 </script>
 
