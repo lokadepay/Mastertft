@@ -10,12 +10,16 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'success'])
 
+// --- LOADING & ERREURS ---
+const isLoading = ref(false)
+const errors = ref<Record<string, string>>({})
+
 // --- DATA FETCHING ---
 const { data: allTraits } = await useFetch('/api/b1/public/traits', {
-  transform: (res:any) => res.data
+  transform: (res:any) => res.data || []
 })
 const { data: allItems } = await useFetch('/api/b1/public/items', {
-  transform: (res:any) => res.data
+  transform: (res:any) => res.data || []
 })
 
 // --- STATE ---
@@ -56,6 +60,12 @@ const state = reactive({
     averagePlace: undefined as number | undefined
 })
 
+// --- VALIDATION ZOD ---
+const schema = z.object({
+  name: z.string().min(1, "Nom requis"),
+  riotApiId: z.string().min(1, "Id Riot requis"),
+  cost: z.number().min(1).max(7, "Cost invalide")
+})
 
 // --- FILTRE & TRI ITEMS ---
 // On détecte si le champion est Bilgewater
@@ -125,7 +135,7 @@ const filteredItems = computed(() => {
     .slice(0 ,15)
 })
 
-// --- TRAITS & SCALING ---
+// --- BOUTONS ---
 const addTrait = () => state.selectedTraits.push('')
 const removeTrait = (index: number) => state.selectedTraits.splice(index, 1)
 const addScalingStat = () => state.scalingStats.push({ statName: '', statValue: '' })
@@ -185,7 +195,7 @@ watch(() => props.unitToEdit, (newUnit) => {
     state.unlockIconUrl = newUnit.unlockIconUrl || ''
 
     state.abilityName = newUnit.ability?.name || ''
-    state.abilityActive = newUnit.ability?.acive || ''
+    state.abilityActive = newUnit.ability?.active || ''
     state.abilityPassive = newUnit.ability?.passive || ''
     if (newUnit.ability?.scalingStats?.length) {
       state.scalingStats = newUnit.ability.scalingStats.map((s: any) => ({
@@ -213,6 +223,19 @@ watch(() => props.unitToEdit, (newUnit) => {
 
 // --- SUBMIT ---
 async function onSubmit() {
+  const validation = schema.safeParse(state)
+  if (!validation.success) {
+    errors.value = validation.error.issues.reduce((acc: any, issue) => {
+      acc[issue.path[0]] = issue.message
+      return acc
+    }, {})
+    return
+  }
+  errors.value = {}
+
+  isLoading.value = true
+
+  // --- NETTOYAGE ---
   const traitIds = state.selectedTraits.filter(id => id !== '')
   const cleanScalingStats = state.scalingStats.filter(s => s.statName && s.statValue)
 
@@ -242,6 +265,8 @@ async function onSubmit() {
   } catch (e) {
     alert('Erreur lors de la sauvegarde')
     console.error(e)
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
