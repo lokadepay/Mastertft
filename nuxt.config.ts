@@ -8,6 +8,17 @@ export default defineNuxtConfig({
         '@nuxtjs/tailwindcss',
     ],
 
+    app: {
+        head: {
+            link: [
+                // Import de Bebas Neue depuis Google Fonts
+                { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+                { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+                { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap' }
+            ]
+        }
+    },
+
     vite: {
         resolve: {
             dedupe: [
