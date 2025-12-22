@@ -10,7 +10,7 @@ library.add(faChevronUp, faMagnifyingGlass)
     <div class="header__container">
         <NuxtLink to="/" class="header__logo">
             <div class="header__logo__img">
-                <img src="images/logos/mastertft-ss-fond.png" alt="MasterTFT"/>
+                <img src="/images/logos/mastertft-ss-fond.png" alt="MasterTFT"/>
             </div>
             <div class="header__logo__txt">
                 <span class="master">MASTER</span>
