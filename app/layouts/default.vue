@@ -1,12 +1,10 @@
 <script setup>
-import Background from '~/components/Background.vue'; 
-import Navbar from '~/components/Navbar.vue'; 
 </script>
 
 <template>
 <div class="layout">
     <Background />
-    <Navbar />
+    <Header />
 
     <main class="layout__column">
         <slot />
