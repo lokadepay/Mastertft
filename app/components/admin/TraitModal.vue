@@ -245,6 +245,7 @@ async function onSubmit() {
 
 <style lang="scss" scoped>
 @use '~/assets/styles/variables' as *;
+@use 'sass:color';
 
 .modal {
     position: fixed;
@@ -333,6 +334,19 @@ async function onSubmit() {
 
                 &__img {
                     margin-top: 40px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    img {
+                        margin-left: 12px;
+                        width: 48px;
+                        height: 48px;
+                        padding: 4px;
+                        border: 2px solid $straight-purple;
+                        border-radius: 4px;
+                        background-color: $dark-purple;
+                    }
                 }
             }
 
@@ -363,7 +377,7 @@ async function onSubmit() {
                 margin-top: 20px;
 
                 &:hover {
-                    background-color: darken($straight-purple, 10%);
+                    background-color: color.adjust($straight-purple, $lightness: -10%);
                 }
             }
 
@@ -383,7 +397,7 @@ async function onSubmit() {
                         font-size: 20px;
 
                         &:hover {
-                            color: darken($straight-purple, 10%);
+                            color: color.adjust($straight-purple, $lightness: -10%);
                         }
                     }
                 }
@@ -434,7 +448,7 @@ async function onSubmit() {
             font-family: $title-font;
             font-size: 20px;
             &:hover {
-                background: darken($badwr, 10%);
+                background: color.adjust($badwr, $lightness: -10%);
             }
         }
 
@@ -447,7 +461,7 @@ async function onSubmit() {
             font-family: $title-font;
             font-size: 20px;
             &:hover {
-                background: darken($goodwr, 10%);
+                background: color.adjust($goodwr, $lightness: -10%);
             }
         }
     }
