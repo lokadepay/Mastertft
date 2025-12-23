@@ -23,7 +23,7 @@ interface Unit {
 
 defineProps<{
     trait: Trait
-    units: Unit[]
+    units: Unit[] 
 }>()
 
 const getBreakpointColor = (level: string) => {
@@ -98,5 +98,16 @@ const getUnitColor = (cost: number) => {
 </template>
 
 <style lang="scss" scoped>
-
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    height: 170px;
+    background-color: $dark-purple;
+    border: 4px solid $light-purple;
+    &__header {
+        background-color: $deep-purple;
+    }
+}
 </style>
