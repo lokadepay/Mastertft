@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, resolveComponent } from 'vue'
 import { formatText } from '~/utils/textFormatter'
 
 interface Breakpoint {
@@ -21,29 +22,35 @@ interface Unit {
     cost: number
 }
 
-defineProps<{
+const props = defineProps<{
     trait: Trait
     units: Unit[] 
 }>()
 
+const iconComponent = computed(() => {
+    const cleanName = props.trait.name.replace(/\s+/g, '')
+
+    return resolveComponent(cleanName)
+})
+
 const getBreakpointColor = (level: string) => {
     switch(level) {
-        case 'bronze': return '$bronze'
-        case 'silver': return '$silver'
-        case 'gold': return '$gold'
-        case 'prismatic': return '$prisma'
-        default: return '$light-purple'
+        case 'bronze': return 'background-color: #8C6239'
+        case 'silver': return 'background-color: #C0C0C0'
+        case 'gold': return 'background-color: #D4AF37'
+        case 'prismatic': return 'background-color: #64E0D7'
+        default: return '#ffffff'
     }
 }
 
 const getUnitColor = (cost: number) => {
     switch(cost) {
-        case 1: return '$one-cost'
-        case 2: return '$two-cost'
-        case 3: return '$three-cost'
-        case 4: return '$four-cost'
-        case 5: return '$five-cost'
-        default: return '$light-purple'
+        case 1: return '#B0B0B0'
+        case 2: return '#4CAF50'
+        case 3: return '#2196F3'
+        case 4: return '#9C27B0'
+        case 5: return '#FFB300'
+        default: return '#ffffff'
     }
 }
 </script>
@@ -53,7 +60,12 @@ const getUnitColor = (cost: number) => {
 
     <header class="card__header">
         <div class="icon-wrapper">
-            <img :src="trait.img" :alt="trait.name" />
+           <TraitBadge>
+                <component 
+                    :is="iconComponent"
+                    class="trait-icon"
+                />
+           </TraitBadge>
         </div>
             <div class="card__header__infos">
             <h2 class="trait-name">{{ trait.name }}</h2>
@@ -104,14 +116,39 @@ const getUnitColor = (cost: number) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 120px !important;
-    height: 170px;
-    background-color: $dark-purple !important;
+    width: 200px ;
+    height: 360px;
+    background-color: $dark-purple ;
     border: 4px solid $light-purple;
+    border-radius: 8px;
     &__header {
-        display: flex !important;
-        flex-direction: row !important;
+        display: flex ;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
         background-color: $deep-purple;
+        padding: 8px;
+        border-radius: 8px 8px 0 0;
+        border-bottom: 1px solid $light-purple;
+        gap: 8px;
+
+        .icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .trait-icon {
+                width: 32px;
+                height: 32px;
+                color: $light-purple;
+            }
+        }
+
+        &__infos {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-between;
+        }
     }
 }
 </style>

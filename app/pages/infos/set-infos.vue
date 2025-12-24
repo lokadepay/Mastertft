@@ -69,9 +69,7 @@ const formatBreakpoints = (bpData: any) => {
 
     .traits-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 30px;
-        align-items: start;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
 
