@@ -11,7 +11,6 @@ export default defineNuxtConfig({
     app: {
         head: {
             link: [
-                // Import de Bebas Neue depuis Google Fonts
                 { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
                 { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
                 { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap' }
@@ -19,15 +18,21 @@ export default defineNuxtConfig({
         }
     },
 
+    css: [
+        '~/assets/styles/main.scss'
+    ],
+
     vite: {
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    api: 'modern-compiler',
+                    additionalData: '@use "~/assets/styles/variables" as *;'
+                }
+            }
+        },
         resolve: {
-            dedupe: [
-                'vue',
-                '@vue/runtime-core',
-                'vue-router',
-                'unhead',
-                '@unhead/vue'
-            ]
+            dedupe: ['vue', '@vue/runtime-core', 'vue-router', 'unhead', '@unhead/vue']
         }
     },
 

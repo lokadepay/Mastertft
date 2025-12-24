@@ -98,15 +98,19 @@ const getUnitColor = (cost: number) => {
 </template>
 
 <style lang="scss" scoped>
+@use '~/assets/styles/variables' as *;
+
 .card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 120px;
+    width: 120px !important;
     height: 170px;
-    background-color: $dark-purple;
+    background-color: $dark-purple !important;
     border: 4px solid $light-purple;
     &__header {
+        display: flex !important;
+        flex-direction: row !important;
         background-color: $deep-purple;
     }
 }
